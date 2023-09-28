@@ -57,11 +57,13 @@ class Database
         if ($s == null) return null;
         return $this->conn->real_escape_string($s);
     }
-    public static function query($query)
+    public static function query(string $query, string $db_name = NULL)
     {
+        $db_name = $db_name == NULL ? array_key_first(Request::$db) : md5($db_name);
+
         $query = trim($query);
         try {
-            return Request::$server['DB_CONN']->query($query);
+            return Request::$db[$db_name]->query($query);
         } catch (\Exception $e) {
             // Response::error('Request failed');
             Response::error($e->getMessage(), ['query' => $query]);
@@ -76,8 +78,8 @@ class Database
             $result = $this->conn->query($query);
         } catch (\Exception $e) {
             // Response::error('Request failed');
-            // Response::error($e->getMessage(), ['query' => $query]);
-            die($e->getMessage() . "<br><i>[$query]</i>");
+            Response::error($e->getMessage(), ['query' => $query]);
+            // die($e->getMessage() . "<br><i>[$query]</i>");
         }
 
         switch ($query):
