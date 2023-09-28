@@ -6,7 +6,6 @@ use Scaliter\Request;
 
 class Database
 {
-
     public static function db_conn(array $db_conn, string $db_name = NULL)
     {
         $db_name = $db_name == NULL ? uniqid() . md5(mt_rand()) : md5($db_name);
@@ -15,17 +14,11 @@ class Database
     }
     public static function connect()
     {
-        // $_ENV['conn'] = new \mysqli(getSCons('DB_HOST'), getSCons('DB_USER'), getSCons('DB_PASS'), getSCons('DB_NAME'));
-        $DB_HOST = Request::env("DB_HOST");
-        $DB_USER = Request::env("DB_USER");
-        $DB_PASS = Request::env("DB_PASS");
-        $DB_NAME = Request::env("DB_NAME");
-
-        // $DB_CONN = new \mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
-        // $DB_CONN->set_charset("utf8mb4");
-
         self::db_conn([
-            'HOST' => $DB_HOST, 'USER' => $DB_USER, 'PASS' => $DB_PASS, 'NAME' => $DB_NAME
+            'HOST' => Request::env('DB_HOST'),
+            'USER' => Request::env('DB_USER'),
+            'PASS' => Request::env('DB_PASS'),
+            'NAME' => Request::env('DB_NAME')
         ])->set_charset("utf8mb4");
     }
     public static function disconnect()
