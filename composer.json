@@ -7,7 +7,7 @@
         }
     },
     "require": {
-        "scaliter/response": "^0.1"
+        "scaliter/request": "^0.1"
     },
     "license": "MIT"
 }
