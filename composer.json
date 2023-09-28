@@ -1,0 +1,13 @@
+{
+    "name": "scaliter/database",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Scaliter\\": "src/"
+        }
+    },
+    "require": {
+        "scaliter/response": "^0.1"
+    },
+    "license": "MIT"
+}
