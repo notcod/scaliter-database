@@ -2,8 +2,17 @@
 
 namespace Scaliter;
 
+use Scaliter\Request;
+
 class Database
 {
+
+    public static function db_conn(array $db_conn, string $db_name = NULL)
+    {
+        $db_name = $db_name == NULL ? uniqid() . md5(mt_rand()) : md5($db_name);
+        Request::$db[$db_name] = new \mysqli($db_conn['HOST'], $db_conn['USER'], $db_conn['PASS'], $db_conn['NAME']);
+        return Request::$db[$db_name];
+    }
     public static function connect()
     {
         // $_ENV['conn'] = new \mysqli(getSCons('DB_HOST'), getSCons('DB_USER'), getSCons('DB_PASS'), getSCons('DB_NAME'));
@@ -12,46 +21,51 @@ class Database
         $DB_PASS = Request::env("DB_PASS");
         $DB_NAME = Request::env("DB_NAME");
 
-        $DB_CONN = new \mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
-        $DB_CONN->set_charset("utf8mb4");
+        // $DB_CONN = new \mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
+        // $DB_CONN->set_charset("utf8mb4");
 
-        Request::$server['DB_CONN'] = $DB_CONN;
+        self::db_conn([
+            'HOST' => $DB_HOST, 'USER' => $DB_USER, 'PASS' => $DB_PASS, 'NAME' => $DB_NAME
+        ])->set_charset("utf8mb4");
     }
     public static function disconnect()
     {
-        Request::$server['DB_CONN']->close();
+        foreach (Request::$db as $db)
+            $db->close();
     }
 
     private object $conn;
     private $where, $limit, $table, $order = null;
 
-    public static function table(string $table): self
+    public static function table(string $table, string $db_name = NULL): self
     {
-        return new self($table);
+        $db_name = $db_name == NULL ? array_key_first(Request::$db) : md5($db_name);
+        return new self($table, $db_name);
     }
     public function dump()
     {
         var_dump($this);
         die;
     }
-    public function __construct($table = null)
+    public function __construct($table = null, string $db_name = NULL)
     {
         $this->table = $table;
-        $this->conn = Request::$server['DB_CONN'];
+        $this->conn = Request::$db[$db_name];
     }
     public function escape($s)
     {
-        if($s == null) return null;
+        if ($s == null) return null;
         return $this->conn->real_escape_string($s);
     }
-    public static function query($query){
+    public static function query($query)
+    {
         $query = trim($query);
         try {
             return Request::$server['DB_CONN']->query($query);
         } catch (\Exception $e) {
             // Response::error('Request failed');
-            // Response::error($e->getMessage(), ['query' => $query]);
-            die($e->getMessage() . "<br><i>[$query]</i>");
+            Response::error($e->getMessage(), ['query' => $query]);
+            // die($e->getMessage() . "<br><i>[$query]</i>");
         }
     }
     private function __query(string $query)
